@@ -8,43 +8,34 @@ BOM_stations
 
 ## Questions
 
-# Question 1: 
+## Question 1: 
 #For each station, how many days have a minimum temperature, a maximum temperature and a rainfall measurement recorded?
 
 BOM_data %>% 
-  separate(Temp_min_max, into = c("min", 'max')) %>% # seperating the max and min temperature
-  filter(min != "", max != "", Rainfall != 0) %>%  # filtering for rows that have a min, max and rainfall value
-  group_by(Station_number) %>% # grouping my station number
-  summarise(n_rows = n()) # counting the number of rows in each group
+  separate(Temp_min_max, into = c("min", 'max')) %>% # Seperating the max and min temperature
+  filter(min != "", max != "", Rainfall != 0) %>%  # Filtering for rows that have a min, max and rainfall value
+  group_by(Station_number) %>% # Grouping my station number
+  summarise(n_rows = n()) # Counting the number of rows in each group
 
-# Question 2:
+
+## Question 2:
 # Which month saw the lowest average daily temperature difference?
 
-BOM_data_temp <- BOM_data %>% # BOM_data
+BOM_data %>% # BOM_data
   separate(Temp_min_max, into = c("min", 'max')) %>% # Seperate the columns
-  filter(min != "", max != "") # Filtering for rows that have a min and max temp
-  
-BOM_data_temp 
-  
-BOM_data_temp_dif <- mutate(BOM_data_temp, temp_difference = as.numeric(max) - as.numeric(min)) # Find the difference between lowest and higherst temperatures 
+  filter(min != "", max != "") %>%  # Filtering for rows that have a min and max temp
+  mutate(temp_difference = as.numeric(max) - as.numeric(min)) %>% # Find the difference between lowest and higherst temperatures 
+  group_by(Month) %>% # Group by month
+  summarise(mean_temp_dif = mean(temp_difference)) %>% # Find the average of that new column
+  arrange(mean_temp_dif) # Find the lowest average temperature 
 
-BOM_data_temp_dif
 
-grouped_by_month <- group_by(BOM_data_temp_dif, Month) # Group by month
-
-grouped_by_month
-  
-summarised_BOM_data <- summarise(grouped_by_month, mean_temp_dif = mean(temp_difference)) # Find the average of that new column
-
-summarised_BOM_data
-
-arrange(summarised_BOM_data, mean_temp_dif) # Find the lowest average temperature 
-
-# Question 3
+## Question 3
 # Which state saw the lowest average daily temperature difference?
 
 
 # Gather into 3 columns - Station ID, Type of Data (info), actual recorded value itself
+
 BOM_stations_int <- gather(BOM_stations, Station_number, value, -info)
 BOM_stations_int
 
@@ -57,32 +48,45 @@ BOM_stations_tidy
 # Finally you want to join the two sata sets together to identify the state of each weather station. Check that the two DF's 
 # have a shared column to merge and that they are the same data type. 
 
-# I have to convert the from a character to a numeral
+# I have to convert station number from a character to a value
 BOM_stations_tidy <- BOM_stations_tidy %>% 
   mutate(Station_number = as.numeric(Station_number))
-BOM_stations_tidy
 
 # Joining the two data frames
 BOM_combined <- left_join(BOM_stations_tidy, BOM_data)
-BOM_combined
 
 # Using the solution from Question 2 to work out which state saw the lowest average daily temperature difference?
-BOM_combined_temp <- BOM_combined %>% # BOM_data
+BOM_combined %>% # Combined data 
   separate(Temp_min_max, into = c("min", 'max')) %>% # Seperate the columns
-  filter(min != "", max != "") # Filtering for rows that have a min and max temp
+  filter(min != "", max != "") %>% # Filtering for rows that have a min and max temp
+  mutate(temp_difference = as.numeric(max) - as.numeric(min)) %>% # Find the difference between lowest and higherst temperatures 
+  group_by(state) %>% # Group by state
+  summarise(mean_temp_dif = mean(temp_difference)) %>% # Find the average of the new column
+  arrange(mean_temp_dif) # Find the lowest average temperature 
 
-BOM_combined_temp 
 
-BOM_combined_temp_dif <- mutate(BOM_combined_temp, temp_difference = as.numeric(max) - as.numeric(min)) # Find the difference between lowest and higherst temperatures 
+## Question 4
+# Does the westmost (lowest longitude) or eastmost (highest longitude) weather station in our dataset have a higher average solar exposure?
 
-BOM_combined_temp_dif
+# For the lowest longitude 
+BOM_combined %>% 
+  mutate(Solar_exposure = as.numeric(Solar_exposure)) %>% # Change Solar exposure to a value not a character
+  group_by(Station_number, lon) %>% # Group by station number and longitude
+  summarise(mean_solar = mean(Solar_exposure, na.rm = TRUE)) %>%  # Find the mean of Solar Exposure 
+  arrange(lon) # Arrange it from smallest to largest 
 
-grouped_by_state <- group_by(BOM_combined_temp_dif, state) # Group by state
+# For the highest longitude 
+BOM_combined %>% 
+  mutate(Solar_exposure = as.numeric(Solar_exposure)) %>% # Change Solar Exposure to a value not a character
+  group_by(Station_number, lon) %>% # Group by station number and longitude
+  summarise(mean_solar = mean(Solar_exposure, na.rm = TRUE)) %>%  # Find the mean of Solar Exposure 
+  arrange(desc(lon)) # Arrange it from largest to smallest 
 
-grouped_by_state
 
-summarised_BOM_combined <- summarise(grouped_by_state, mean_temp_dif = mean(temp_difference)) # Find the average of the new column
 
-summarised_BOM_combined
 
-arrange(summarised_BOM_combined, mean_temp_dif) # Find the lowest average temperature 
+
+
+
+
+
