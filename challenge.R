@@ -62,6 +62,27 @@ BOM_stations_tidy <- BOM_stations_tidy %>%
   mutate(Station_number = as.numeric(Station_number))
 BOM_stations_tidy
 
-left_join(BOM_stations_tidy, BOM_data)
+# Joining the two data frames
+BOM_combined <- left_join(BOM_stations_tidy, BOM_data)
+BOM_combined
 
+# Using the solution from Question 2 to work out which state saw the lowest average daily temperature difference?
+BOM_combined_temp <- BOM_combined %>% # BOM_data
+  separate(Temp_min_max, into = c("min", 'max')) %>% # Seperate the columns
+  filter(min != "", max != "") # Filtering for rows that have a min and max temp
 
+BOM_combined_temp 
+
+BOM_combined_temp_dif <- mutate(BOM_combined_temp, temp_difference = as.numeric(max) - as.numeric(min)) # Find the difference between lowest and higherst temperatures 
+
+BOM_combined_temp_dif
+
+grouped_by_state <- group_by(BOM_combined_temp_dif, state) # Group by state
+
+grouped_by_state
+
+summarised_BOM_combined <- summarise(grouped_by_state, mean_temp_dif = mean(temp_difference)) # Find the average of the new column
+
+summarised_BOM_combined
+
+arrange(summarised_BOM_combined, mean_temp_dif) # Find the lowest average temperature 
