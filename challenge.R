@@ -45,7 +45,7 @@ arrange(summarised_BOM_data, mean_temp_dif) # Find the lowest average temperatur
 
 
 # Gather into 3 columns - Station ID, Type of Data (info), actual recorded value itself
-BOM_stations_int <- gather(BOM_stations, station_id, value, -info)
+BOM_stations_int <- gather(BOM_stations, Station_number, value, -info)
 BOM_stations_int
 
 # Spread into a shape with one row for each station. The 'key' argument identifies the data for the column names
@@ -56,3 +56,12 @@ BOM_stations_tidy
 
 # Finally you want to join the two sata sets together to identify the state of each weather station. Check that the two DF's 
 # have a shared column to merge and that they are the same data type. 
+
+# I have to convert the from a character to a numeral
+BOM_stations_tidy <- BOM_stations_tidy %>% 
+  mutate(Station_number = as.numeric(Station_number))
+BOM_stations_tidy
+
+left_join(BOM_stations_tidy, BOM_data)
+
+
