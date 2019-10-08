@@ -82,9 +82,19 @@ BOM_combined %>%
   summarise(mean_solar = mean(Solar_exposure, na.rm = TRUE)) %>%  # Find the mean of Solar Exposure 
   arrange(desc(lon)) # Arrange it from largest to smallest 
 
+## Data Visualisation ##
+# Question 1: For the Perth station (ID 9225), produce three scatter plots showing the relationship between the maximum temperature 
+# and each other measurement recorded (minimum temperature, rainfall and solar exposure)
 
+spread(BOM_combined, Temp_min_max, Temp_min_max)
 
-
+BOM_combined %>% 
+  mutate(Temp_min_max = as.numeric(Temp_min_max)) %>% 
+  filter(Station_number == 9225) %>% 
+  ggplot(aes(
+    y = Temp_min_max,
+    x = Year
+  )) + geom_point()
 
 
 
