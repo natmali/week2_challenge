@@ -86,17 +86,81 @@ BOM_combined %>%
 # Question 1: For the Perth station (ID 9225), produce three scatter plots showing the relationship between the maximum temperature 
 # and each other measurement recorded (minimum temperature, rainfall and solar exposure)
 
-spread(BOM_combined, Temp_min_max, Temp_min_max)
+BOM_combined
 
-BOM_combined %>% 
-  mutate(Temp_min_max = as.numeric(Temp_min_max)) %>% 
+# Min and Max Temp
+plot1 <- BOM_combined %>%
+  separate(Temp_min_max, into = c("max", 'min'), sep = '/') %>%
+  filter(min != "", max != "") %>%
+  mutate(max = as.numeric(max), min = as.numeric(min)) %>% 
   filter(Station_number == 9225) %>% 
   ggplot(aes(
-    y = Temp_min_max,
-    x = Year
+    y = max,
+    x = min
+  )) + geom_point()
+
+# Max Temp and rainfall 
+plot2 <- BOM_combined %>%
+  separate(Temp_min_max, into = c("max", 'min'), sep = '/') %>%
+  filter(min != "", max != "") %>%
+  mutate(max = as.numeric(max), min = as.numeric(min), Rainfall = as.numeric(Rainfall)) %>% 
+  filter(Station_number == 9225) %>% 
+  ggplot(aes(
+    y = Rainfall,
+    x = max
+  )) + geom_point()
+
+# Max Temp and solar exposure
+plot3 <- BOM_combined %>%
+  separate(Temp_min_max, into = c("max", 'min'), sep = '/') %>%
+  filter(min != "", max != "", Solar_exposure != "-") %>%
+  mutate(max = as.numeric(max), min = as.numeric(min), Solar_exposure = as.numeric(Solar_exposure)) %>% 
+  filter(Station_number == 9225) %>% 
+  ggplot(aes(
+    y = Solar_exposure,
+    x = max
   )) + geom_point()
 
 
+# Question 2: Display these four measurements for the Perth station in a single scatter plot by using 
+# additional aesthetic mappings.
 
+plot4 <- BOM_combined %>%
+  separate(Temp_min_max, into = c("max", 'min'), sep = '/') %>%
+  filter(min != "", max != "", Solar_exposure != "-") %>%
+  mutate(max = as.numeric(max), min = as.numeric(min), Solar_exposure = as.numeric(Solar_exposure), Rainfall = as.numeric(Rainfall)) %>% 
+  filter(Station_number == 9225) %>% 
+  ggplot(aes(
+    y = min,
+    x = max,
+    colour = Solar_exposure, 
+    size = Rainfall
+  )) + geom_point()
 
+plot4
+
+# Question 3: Take the four plots you have produced in Q1 and Q2 and save them as a multi-panel figure
+
+install.packages("cowplot") # New package
+library(cowplot)
+
+multipanel_BOM_combined <- plot_grid(plot1, plot2, plot3, plot4) # Creating a multi-panel plot 
+multipanel_BOM_combined
+
+ggsave("figures/multipanel_BOM_combined.png", multipanel_BOM_combined) # Saving the plot as an image in my figures folder 
+
+# Question 4: Using the entire BOM dataset, calculate the average monthly rainfall for each station. Produce a lineplot 
+# to visualise this data and the state each station is in
+
+BOM_combined %>% 
+  mutate(Rainfall = as.numeric(Rainfall)) %>% 
+  filter(Rainfall > 0) %>% 
+  group_by(Month, Station_number) %>% 
+  mutate(amr = mean(Rainfall)) %>% 
+  ggplot(aes(
+    x = Month,
+    y = amr,
+    colour = name,
+    linetype = state
+  )) + geom_line()
 
